@@ -37,9 +37,9 @@
 #define _DESCRIPTORS_H_
 
 	/* Includes: */
-		#include <LUFA/Drivers/USB/USB.h>
-
 		#include <avr/pgmspace.h>
+
+		#include <LUFA/Drivers/USB/USB.h>
 
 	/* Type Defines: */
 		/** Type define for the device configuration descriptor structure. This must be defined in the
@@ -53,7 +53,7 @@
 			// Joystick HID Interface
 			USB_Descriptor_Interface_t            HID_Interface;
 			USB_HID_Descriptor_HID_t              HID_JoystickHID;
-			USB_Descriptor_Endpoint_t             HID_ReportINEndpoint;
+	        USB_Descriptor_Endpoint_t             HID_ReportINEndpoint;
 		} USB_Descriptor_Configuration_t;
 
 		/** Enum for the device interface descriptor IDs within the device. Each interface descriptor
@@ -62,7 +62,7 @@
 		 */
 		enum InterfaceDescriptors_t
 		{
-			INTERFACE_ID_Joystick = 0, /**< Joystick interface descriptor ID */
+			INTERFACE_ID_Joystick = 0, /**< Joystick interface desciptor ID */
 		};
 
 		/** Enum for the device string descriptor IDs within the device. Each string descriptor should
@@ -78,16 +78,10 @@
 
 	/* Macros: */
 		/** Endpoint address of the Joystick HID reporting IN endpoint. */
-		#define JOYSTICK_EPADDR           (ENDPOINT_DIR_IN | 1)
+		#define JOYSTICK_EPADDR              (ENDPOINT_DIR_IN | 1)
 
 		/** Size in bytes of the Joystick HID reporting IN endpoint. */
-		#define JOYSTICK_EPSIZE           8
-
-		/** Descriptor header type value, to indicate a HID class HID descriptor. */
-		#define DTYPE_HID                 0x21
-
-		/** Descriptor header type value, to indicate a HID class HID report descriptor. */
-		#define DTYPE_Report              0x22
+		#define JOYSTICK_EPSIZE              8
 
 	/* Function Prototypes: */
 		uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,

@@ -45,34 +45,14 @@
  */
 const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] =
 {
-	HID_RI_USAGE_PAGE(8, 0x01), /* Generic Desktop */
-	HID_RI_USAGE(8, 0x04), /* Joystick */
-	HID_RI_COLLECTION(8, 0x01), /* Application */
-		HID_RI_USAGE(8, 0x01), /* Pointer */
-		HID_RI_COLLECTION(8, 0x00), /* Physical */
-			HID_RI_USAGE(8, 0x30), /* Usage X */
-			HID_RI_USAGE(8, 0x31), /* Usage Y */
-			HID_RI_USAGE(8, 0x32), /* Usage Z */
-			HID_RI_LOGICAL_MINIMUM(8, -100),
-			HID_RI_LOGICAL_MAXIMUM(8, 100),
-			HID_RI_PHYSICAL_MINIMUM(8, -1),
-			HID_RI_PHYSICAL_MAXIMUM(8, 1),
-			HID_RI_REPORT_COUNT(8, 0x03),
-			HID_RI_REPORT_SIZE(8, 0x08),
-			HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE),
-		HID_RI_END_COLLECTION(0),
-		HID_RI_USAGE_PAGE(8, 0x09), /* Button */
-		HID_RI_USAGE_MINIMUM(8, 0x01),
-		HID_RI_USAGE_MAXIMUM(8, 0x02),
-		HID_RI_LOGICAL_MINIMUM(8, 0x00),
-		HID_RI_LOGICAL_MAXIMUM(8, 0x01),
-		HID_RI_REPORT_SIZE(8, 0x01),
-		HID_RI_REPORT_COUNT(8, 0x02),
-		HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE),
-		HID_RI_REPORT_SIZE(8, 0x06),
-		HID_RI_REPORT_COUNT(8, 0x01),
-		HID_RI_INPUT(8, HID_IOF_CONSTANT),
-	HID_RI_END_COLLECTION(0),
+	/* Use the HID class driver's standard Joystick report.
+	 *   Min X/Y/Z Axis values: -100
+	 *   Max X/Y/Z Axis values:  100
+	 *   Min physical X/Y/Z Axis values (used to determine resolution): -1
+	 *   Max physical X/Y/Z Axis values (used to determine resolution):  1
+	 *   Buttons: 2
+	 */
+	HID_DESCRIPTOR_JOYSTICK(-100, 100, -1, 1, 2)
 };
 
 /** Device descriptor structure. This descriptor, located in FLASH memory, describes the overall
@@ -224,11 +204,11 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			}
 
 			break;
-		case DTYPE_HID:
+		case HID_DTYPE_HID:
 			Address = &ConfigurationDescriptor.HID_JoystickHID;
 			Size    = sizeof(USB_HID_Descriptor_HID_t);
 			break;
-		case DTYPE_Report:
+		case HID_DTYPE_Report:
 			Address = &JoystickReport;
 			Size    = sizeof(JoystickReport);
 			break;

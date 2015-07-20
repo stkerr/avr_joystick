@@ -32,7 +32,7 @@
 *.dSYM/
 
 *.swp
-*.un~
+*.un\~
 *.bin
 *.eep
 *.lss
