@@ -31,3 +31,11 @@
 # Debug files
 *.dSYM/
 
+*.swp
+*.un~
+*.bin
+*.eep
+*.lss
+*.map
+*.sym
+
