@@ -82,21 +82,25 @@
 			static inline void LEDs_Init(void)
 			{
 				// TODO: Add code to initialize LED port pins as outputs here
+				DDRE |= (1 << 6);
 			}
 
 			static inline void LEDs_Disable(void)
 			{
 				// TODO: Clear the LED port pins as high impedance inputs here
+				DDRE &= ~(1 << 6);
 			}
 
 			static inline void LEDs_TurnOnLEDs(const uint8_t LEDMask)
 			{
 				// TODO: Add code to turn on LEDs given in the LEDMask mask here, leave others as-is
+				PORTE |= LEDMask;
 			}
 
 			static inline void LEDs_TurnOffLEDs(const uint8_t LEDMask)
 			{
 				// TODO: Add code to turn off LEDs given in the LEDMask mask here, leave others as-is
+				PORTE &= ~LEDMask;
 			}
 
 			static inline void LEDs_SetAllLEDs(const uint8_t LEDMask)

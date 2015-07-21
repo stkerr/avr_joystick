@@ -63,9 +63,7 @@
 			int8_t  D; /**< Current absolute joystick position, as a signed 8-bit integer */
 			int8_t  E; /**< Current absolute joystick position, as a signed 8-bit integer */
 			int8_t  F; /**< Current absolute joystick position, as a signed 8-bit integer */
-			int8_t  G; /**< Current absolute joystick position, as a signed 8-bit integer */
-			int8_t  H; /**< Current absolute joystick position, as a signed 8-bit integer */
-			uint32_t Button; /**< Bit mask of the currently pressed joystick buttons */
+			uint16_t Button; /**< Bit mask of the currently pressed joystick buttons */
 		} USB_JoystickReport_Data_t;
 
 	/* Macros: */
