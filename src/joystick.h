@@ -57,10 +57,15 @@
 		 */
 		typedef struct
 		{
-			int8_t  X; /**< Current absolute joystick X position, as a signed 8-bit integer */
-			int8_t  Y; /**< Current absolute joystick Y position, as a signed 8-bit integer */
-			int8_t  Z; /**< Current absolute joystick Z position, as a signed 8-bit integer */
-			uint8_t Button; /**< Bit mask of the currently pressed joystick buttons */
+			int8_t  A; /**< Current absolute joystick position, as a signed 8-bit integer */
+			int8_t  B; /**< Current absolute joystick position, as a signed 8-bit integer */
+			int8_t  C; /**< Current absolute joystick position, as a signed 8-bit integer */
+			int8_t  D; /**< Current absolute joystick position, as a signed 8-bit integer */
+			int8_t  E; /**< Current absolute joystick position, as a signed 8-bit integer */
+			int8_t  F; /**< Current absolute joystick position, as a signed 8-bit integer */
+			int8_t  G; /**< Current absolute joystick position, as a signed 8-bit integer */
+			int8_t  H; /**< Current absolute joystick position, as a signed 8-bit integer */
+			uint32_t Button; /**< Bit mask of the currently pressed joystick buttons */
 		} USB_JoystickReport_Data_t;
 
 	/* Macros: */
