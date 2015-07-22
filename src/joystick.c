@@ -165,21 +165,19 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
      * write it into the descriptor.
      */
 	uint8_t JoyStatus_LCL    = Joystick_GetStatus();
-	uint8_t ButtonStatus_LCL = Buttons_GetStatus();
+	uint8_t ButtonStatus_LCL = 0xFE;//Buttons_GetStatus();
 
-	if (JoyStatus_LCL & JOY_UP)
-	  JoystickReport->A = -100;
-	else if (JoyStatus_LCL & JOY_DOWN)
-	  JoystickReport->A =  100;
-
-	if (JoyStatus_LCL & JOY_LEFT)
-	  JoystickReport->B = -100;
-	else if (JoyStatus_LCL & JOY_RIGHT)
-	  JoystickReport->C =  100;
+	  JoystickReport->X = -100;
+	  JoystickReport->Y = -100;
+	  JoystickReport->Z = -100;
+	  JoystickReport->RX = 100;
+	  JoystickReport->RY = 100;
+	  JoystickReport->RZ = 100;
 
 	if (JoyStatus_LCL & JOY_PRESS)
 	  JoystickReport->Button |= (1 << 1);
 
+	JoystickReport = 0xFFFF;
 	if (ButtonStatus_LCL & BUTTONS_BUTTON1)
 	  JoystickReport->Button |= (1 << 0);
 

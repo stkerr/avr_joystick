@@ -44,8 +44,8 @@
  *  more details on HID report descriptors.
  */
 #include <LUFA/Drivers/USB/Class/Common/HIDClassCommon.h>
-#define MinAxisVal -100
-#define MaxAxisVal 100
+#define MinAxisVal -127
+#define MaxAxisVal 127
 #define MinPhysicalVal -1
 #define MaxPhysicalVal 1
 #define Buttons 16
@@ -58,24 +58,29 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] =
 	 *   Min physical X/Y/Z Axis values (used to determine resolution): -1
 	 *   Max physical X/Y/Z Axis values (used to determine resolution):  1
 	 *   Buttons: 16
+	 *
+	 * See http://www.freebsddiary.org/APC/usb_hid_usages.php
 	 */
     HID_RI_USAGE_PAGE(8, 0x01),                     \
     HID_RI_USAGE(8, 0x04),                          \
     HID_RI_COLLECTION(8, 0x01),                     \
         HID_RI_USAGE(8, 0x01),                      \
         HID_RI_COLLECTION(8, 0x00),                 \
-            HID_RI_USAGE(8, 0x30),                  \
-            HID_RI_USAGE(8, 0x31),                  \
-            HID_RI_USAGE(8, 0x32),                  \
-            HID_RI_USAGE(8, 0x33),                  \
+            HID_RI_USAGE(8, 0x30), /* X */                   \ 
+            HID_RI_USAGE(8, 0x31), /* Y */                 \  
+            HID_RI_USAGE(8, 0x32), /* Z */                 \  
+			HID_RI_USAGE(8, 0x33), /* RX */                  \ 
+			HID_RI_USAGE(8, 0x34), /* RY */                 \  
+			HID_RI_USAGE(8, 0x35), /* RZ */                 \  
             HID_RI_LOGICAL_MINIMUM(16, MinAxisVal), \
             HID_RI_LOGICAL_MAXIMUM(16, MaxAxisVal), \
-            HID_RI_PHYSICAL_MINIMUM(16, MinPhysicalVal), \
-            HID_RI_PHYSICAL_MAXIMUM(16, MaxPhysicalVal), \
-            HID_RI_REPORT_COUNT(8, 3),              \
-            HID_RI_REPORT_SIZE(8, (((MinAxisVal >= -128) && (MaxAxisVal <= 127)) ? 8 : 16)), \
+            /*HID_RI_PHYSICAL_MINIMUM(16, MinPhysicalVal), */\
+            /*HID_RI_PHYSICAL_MAXIMUM(16, MaxPhysicalVal), */\
+            HID_RI_REPORT_COUNT(8, 6),              \
+            HID_RI_REPORT_SIZE(8, 8), \
             HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), \
         HID_RI_END_COLLECTION(0),                   \
+		\
         HID_RI_USAGE_PAGE(8, 0x09),                 \
         HID_RI_USAGE_MINIMUM(8, 0x01),              \
         HID_RI_USAGE_MAXIMUM(8, Buttons),           \
