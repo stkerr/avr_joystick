@@ -66,16 +66,16 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] =
     HID_RI_COLLECTION(8, 0x01),                     \
         HID_RI_USAGE(8, 0x01),                      \
         HID_RI_COLLECTION(8, 0x00),                 \
-            HID_RI_USAGE(8, 0x30), /* X */                   \ 
-            HID_RI_USAGE(8, 0x31), /* Y */                 \  
-            HID_RI_USAGE(8, 0x32), /* Z */                 \  
-			HID_RI_USAGE(8, 0x33), /* RX */                  \ 
-			HID_RI_USAGE(8, 0x34), /* RY */                 \  
-			HID_RI_USAGE(8, 0x35), /* RZ */                 \  
+            HID_RI_USAGE(8, 0x30), /* X */                   \
+            HID_RI_USAGE(8, 0x31), /* Y */                 \
+            HID_RI_USAGE(8, 0x32), /* Z */                 \
+			HID_RI_USAGE(8, 0x33), /* RX */                  \
+			HID_RI_USAGE(8, 0x34), /* RY */                 \
+			HID_RI_USAGE(8, 0x35), /* RZ */                 \
             HID_RI_LOGICAL_MINIMUM(16, MinAxisVal), \
             HID_RI_LOGICAL_MAXIMUM(16, MaxAxisVal), \
-            /*HID_RI_PHYSICAL_MINIMUM(16, MinPhysicalVal), */\
-            /*HID_RI_PHYSICAL_MAXIMUM(16, MaxPhysicalVal), */\
+            HID_RI_PHYSICAL_MINIMUM(16, MinPhysicalVal), \
+            HID_RI_PHYSICAL_MAXIMUM(16, MaxPhysicalVal), \
             HID_RI_REPORT_COUNT(8, 6),              \
             HID_RI_REPORT_SIZE(8, 8), \
             HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), \

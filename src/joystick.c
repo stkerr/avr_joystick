@@ -36,6 +36,7 @@
 
 #include "joystick.h"
 
+
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevJoystickHIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
 
@@ -164,22 +165,18 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
      * TODO: For each joystick axis, iterate over each and get the status, then
      * write it into the descriptor.
      */
-	uint8_t JoyStatus_LCL    = Joystick_GetStatus();
-	uint8_t ButtonStatus_LCL = 0xFE;//Buttons_GetStatus();
+	//uint8_t JoyStatus_LCL    = Joystick_GetStatus();
+	uint8_t ButtonStatus_LCL = Buttons_GetStatus();
+	PORTE = ButtonStatus_LCL; // output the inputs to the output pins
 
-	  JoystickReport->X = -100;
-	  JoystickReport->Y = -100;
-	  JoystickReport->Z = -100;
-	  JoystickReport->RX = 100;
-	  JoystickReport->RY = 100;
-	  JoystickReport->RZ = 100;
+    JoystickReport->X = 0;
+    JoystickReport->Y = 0;
+    JoystickReport->Z = 0;
+    JoystickReport->RX = 0;
+    JoystickReport->RY = 0;
+    JoystickReport->RZ = 0;
 
-	if (JoyStatus_LCL & JOY_PRESS)
-	  JoystickReport->Button |= (1 << 1);
-
-	JoystickReport = 0xFFFF;
-	if (ButtonStatus_LCL & BUTTONS_BUTTON1)
-	  JoystickReport->Button |= (1 << 0);
+	JoystickReport->Button = ButtonStatus_LCL;
 
 	*ReportSize = sizeof(USB_JoystickReport_Data_t);
 	return false;

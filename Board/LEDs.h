@@ -82,13 +82,13 @@
 			static inline void LEDs_Init(void)
 			{
 				// TODO: Add code to initialize LED port pins as outputs here
-				DDRE |= (1 << 6);
+				DDRE = 0xFF;
 			}
 
 			static inline void LEDs_Disable(void)
 			{
 				// TODO: Clear the LED port pins as high impedance inputs here
-				DDRE &= ~(1 << 6);
+				DDRE = 0x0;
 			}
 
 			static inline void LEDs_TurnOnLEDs(const uint8_t LEDMask)
@@ -106,6 +106,7 @@
 			static inline void LEDs_SetAllLEDs(const uint8_t LEDMask)
 			{
 				// TODO: Add code to turn on only LEDs given in the LEDMask mask here, all others off
+				PORTE = 0xFF;
 			}
 
 			static inline void LEDs_ChangeLEDs(const uint8_t LEDMask, const uint8_t ActiveMask)
@@ -116,13 +117,17 @@
 			static inline void LEDs_ToggleLEDs(const uint8_t LEDMask)
 			{
 				// TODO: Add code to toggle the Leds in the given LEDMask, ignoring all others
+				int fixed_value = PORTE & ~LEDMask;
+				int moving_value = PORTE & LEDMask;
+				moving_value = ~moving_value;
+				PORTE = moving_value | fixed_value; 
 			}
 
 			static inline uint8_t LEDs_GetLEDs(void) ATTR_WARN_UNUSED_RESULT;
 			static inline uint8_t LEDs_GetLEDs(void)
 			{
 				// TODO: Add code to return the current LEDs status' here which can be masked against LED_LED* macros
-				return 0;
+				return PORTE;
 			}
 		#endif
 

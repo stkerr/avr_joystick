@@ -67,6 +67,8 @@
 			static inline void Buttons_Init(void)
 			{
 				// TODO: Initialize the appropriate port pins as an inputs here, with pull-ups
+				DDRB = 0x00; // use B pins as input
+				PORTB = 0x00; // no pull-up, default to off
 			}
 
 			static inline void Buttons_Disable(void)
@@ -78,7 +80,7 @@
 			static inline uint8_t Buttons_GetStatus(void)
 			{
 				// TODO: Return current button status here, debounced if required
-				return 0;
+				return PINB;
 			}
 		#endif
 

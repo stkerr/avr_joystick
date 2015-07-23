@@ -46,6 +46,7 @@
 
 	/* Includes: */
 		// TODO: Add any required includes here
+        #include <util/delay.h>
 
 	/* Enable C linkage for C++ Compilers: */
 		#if defined(__cplusplus)
@@ -60,7 +61,7 @@
 	/* Public Interface - May be used in end-application: */
 		/* Macros: */
 			/** Indicates the board has hardware Buttons mounted if defined. */
-//			#define BOARD_HAS_BUTTONS
+            #define BOARD_HAS_BUTTONS
 
 			/** Indicates the board has a hardware Dataflash mounted if defined. */
 //			#define BOARD_HAS_DATAFLASH

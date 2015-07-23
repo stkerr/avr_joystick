@@ -9,7 +9,7 @@ SRC          = $(wildcard src/*.c) \
 				$(LUFA_SRC_USB) \
 				$(LUFA_SRC_USBCLASS)
 LUFA_PATH    = lufa-LUFA-140928/LUFA
-CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Isrc/
+CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Isrc/ -Werror
 LD_FLAGS     =
 
 # Default target
