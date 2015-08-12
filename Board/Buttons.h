@@ -69,8 +69,8 @@
 				// TODO: Initialize the appropriate port pins as an inputs here, with pull-ups
 				DDRB = 0x00; // use B pins as input
 				DDRD = 0x00; // use D pins as input
-				PORTB = 0x00; // no pull-up, default to off
-				PORTD = 0x00; // no pull-up, default to off
+				PORTB = 0xFF; // pull-up, default to on
+				PORTD = 0xFF; // pull-up, default to on
 			}
 
 			static inline void Buttons_Disable(void)
