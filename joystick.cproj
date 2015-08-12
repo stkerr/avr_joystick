@@ -51,10 +51,16 @@
       <ToolNumber>000200086307</ToolNumber>
       <ToolName>AVRISP mkII</ToolName>
     </com_atmel_avrdbg_tool_ispmk2>
+    <UseGdb>False</UseGdb>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
     </ToolchainSettings>
+    <UsesExternalMakeFile>True</UsesExternalMakeFile>
+    <OutputDirectory>C:\Users\kerrs_000\Documents\Code\avr_joystick</OutputDirectory>
+    <BuildTarget>all</BuildTarget>
+    <CleanTarget>clean</CleanTarget>
+    <ExternalMakeFilePath>C:\Users\kerrs_000\Documents\Code\avr_joystick\Makefile</ExternalMakeFilePath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
@@ -66,6 +72,21 @@
     <ExternalMakeFilePath>C:\Users\kerrs_000\Documents\Code\avr_joystick\Makefile</ExternalMakeFilePath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Board/Board.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Board/Buttons.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Board/Dataflash.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Board/Joystick.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Board/LEDs.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src/descriptors.c">
       <SubType>compile</SubType>
     </Compile>
