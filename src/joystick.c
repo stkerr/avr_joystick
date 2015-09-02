@@ -51,7 +51,7 @@ USB_ClassInfo_HID_Device_t Joystick_HID_Interface =
 				.InterfaceNumber              = INTERFACE_ID_Joystick,
 				.ReportINEndpoint             =
 					{
-						.Address              = JOYSTICK_EPADDR,
+						.Address              = JOYSTICK_IN_EPADDR,
 						.Size                 = JOYSTICK_EPSIZE,
 						.Banks                = 1,
 					},
@@ -182,6 +182,7 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
  *  \param[in] ReportData  Pointer to a buffer where the received report has been stored
  *  \param[in] ReportSize  Size in bytes of the received HID report
  */
+static uint8_t mask=0;
 void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDInterfaceInfo,
                                           const uint8_t ReportID,
                                           const uint8_t ReportType,
@@ -189,5 +190,7 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const uint16_t ReportSize)
 {
 	// Unused (but mandatory for the HID class driver) in this demo, since there are no Host->Device reports
+	mask = (mask + 1) % 0xFF;
+	PORTF = mask;
 }
 
