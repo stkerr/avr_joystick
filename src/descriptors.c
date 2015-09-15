@@ -87,13 +87,7 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] =
         HID_RI_USAGE_MAXIMUM(8, Buttons),           \
         HID_RI_LOGICAL_MINIMUM(8, 0x00),            \
         HID_RI_LOGICAL_MAXIMUM(8, 0x01),            \
-        HID_RI_REPORT_SIZE(8, 0x01),                \
-        HID_RI_REPORT_COUNT(8, Buttons),            \
-        HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), \
         \
-        HID_RI_REPORT_SIZE(8, (Buttons % 8) ? (8 - (Buttons % 8)) : 0), \
-        HID_RI_REPORT_COUNT(8, 0x01),               \
-        HID_RI_INPUT(8, HID_IOF_CONSTANT),          \
         HID_RI_REPORT_SIZE(8, 8),                  \
         HID_RI_REPORT_COUNT(8, 54),               \
         HID_RI_INPUT(8, HID_IOF_CONSTANT),          \
@@ -188,20 +182,9 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 
 			.EndpointAddress        = JOYSTICK_IN_EPADDR,
 			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
-			.EndpointSize           = JOYSTICK_IN_EPSIZE,
+			.EndpointSize           = 64,
 			.PollingIntervalMS      = 0x05
 		},
-
-	.HID_ReportOUTEndpoint =
-        {
-			.Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
-
-			.EndpointAddress        = JOYSTICK_OUT_EPADDR,
-			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
-			.EndpointSize           = JOYSTICK_OUT_EPSIZE,
-			.PollingIntervalMS      = 0x05
-		}
-
 };
 
 /** Language descriptor structure. This descriptor, located in FLASH memory, is returned when the host requests

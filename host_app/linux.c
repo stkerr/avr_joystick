@@ -147,9 +147,9 @@ int main(int argc, char **argv)
 
 	 // Send a Report to the Device 
 	
-	memset(buf, 0x0, sizeof(buf));
 	buf[0] = 0x1; 
 	buf[1] = 0xF0;
+	/*
 	res = write(fd, buf, (65));
 	if (res < 0) {
 		printf("Error: %d\n", errno);
@@ -157,12 +157,15 @@ int main(int argc, char **argv)
 	} else {
 		printf("write() wrote %d bytes\n", res);
 	}
+	*/
 	
 	 // Get a report from the device 
 	printf("listening.\n");
 	int j = 0;
+	unsigned int count = 0;
+	int byte;
 	while(1){
-        res = read(fd, buf, 64);
+        res = read(fd, buf, 32);
         if (res < 0) {
             perror("read");
         } else {
@@ -172,12 +175,18 @@ int main(int argc, char **argv)
             puts("\n");
         }
 
-        while(1);
-        j = (j + 1) % 0xFF;
-        printf("j=%d\n",j);
-        memset(buf, j, sizeof(buf));
-        res = write(fd, buf, 3);
-        printf("write() returned %d\n", res);
+        count = (count + 1);
+        printf("Count :%x\n", count);
+        byte = (count & 0xFF00) >> 8;
+        printf("byte :%x\n", byte);
+        memset(buf, byte , sizeof(buf));
+        res = write(fd, buf, 32);
+        if (res < 0) {
+            printf("Error: %d\n", errno);
+            perror("write");
+        } else {
+            printf("write() wrote %d bytes\n", res);
+        }
     }
 	close(fd);
 	return 0;

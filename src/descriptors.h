@@ -54,7 +54,6 @@
 			USB_Descriptor_Interface_t            HID_Interface;
 			USB_HID_Descriptor_HID_t              HID_JoystickHID;
 	        USB_Descriptor_Endpoint_t             HID_ReportINEndpoint;
-	        USB_Descriptor_Endpoint_t             HID_ReportOUTEndpoint;
 		} USB_Descriptor_Configuration_t;
 
 		/** Enum for the device interface descriptor IDs within the device. Each interface descriptor
@@ -82,11 +81,9 @@
 		#define JOYSTICK_IN_EPADDR              (ENDPOINT_DIR_IN | 1)
 
     /** Endpoint address of the Joystick HID reporting OUT endpoint. */
-		#define JOYSTICK_OUT_EPADDR              (ENDPOINT_DIR_OUT | 2)
 
 		/** Size in bytes of the Joystick HID reporting IN endpoint. */
-		#define JOYSTICK_IN_EPSIZE              8
-		#define JOYSTICK_OUT_EPSIZE             8 
+		#define JOYSTICK_IN_EPSIZE             32 
 
 	/* Function Prototypes: */
 		uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,

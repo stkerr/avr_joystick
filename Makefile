@@ -14,9 +14,9 @@ LD_FLAGS     =
 
 
 # Default target
-all: avrdude
+all:
 
-run: all
+run: avrdude all
 	$(MAKE) -C host_app run
 
 # Include LUFA build script makefiles

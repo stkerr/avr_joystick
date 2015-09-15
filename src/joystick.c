@@ -162,16 +162,18 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          void* ReportData,
                                          uint16_t* const ReportSize)
 {
-    PORTD = PORTD | 0x01;
-    PORTD = PORTD & ~0x02;
 
-    *ReportID = 9;
     mask = (mask + 1) % 0xFF;
+    /*
     ((unsigned char*)ReportData)[0] = mask;
     ((unsigned char*)ReportData)[1] = (unsigned char)(*ReportSize & 0x00FF);
     ((unsigned char*)ReportData)[2] = (unsigned char)((*ReportSize>>8) & 0xFF);
-    ((unsigned char*)ReportData)[3] = saved;
-    *ReportSize = 64;
+    ((unsigned char*)ReportData)[3] = PINB;
+    */
+    ((USB_JoystickReport_Data_t*)ReportData)->Button = PINB;
+    ((USB_JoystickReport_Data_t*)ReportData)->X= mask;
+    ((USB_JoystickReport_Data_t*)ReportData)->Y= saved;
+    *ReportSize = 32;
 	return false;
 }
 
@@ -189,16 +191,7 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const void* ReportData,
                                           const uint16_t ReportSize)
 {
+    saved = ((unsigned char*)ReportData)[1];
 	// Unused (but mandatory for the HID class driver) in this demo, since there are no Host->Device reports
-	if(ReportSize == 64)
-    {
-        PORTD = 0xF0;
-        saved = ((unsigned char*)ReportData)[1];
-    }
-    else
-    {
-        PORTD = 0x00;
-//        PORTD = 0x0F;
-    }
 }
 
