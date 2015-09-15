@@ -1,8 +1,8 @@
 app: linux.c
-	$(CXX) -o app linux.c
+	$(CC) -o app linux.c
 
 run: app
 	./$<
 
 clean:
-	rm app
+	-rm app

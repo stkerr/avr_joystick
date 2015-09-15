@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
 	/* Open the Device with non-blocking reads. In real life,
 	   don't use a hard coded path; use libudev instead. */
-	fd = open("/dev/hidraw1", O_RDWR|O_NONBLOCK);
+//	fd = open("/dev/hidraw1", O_RDWR|O_NONBLOCK);
 	fd = open("/dev/hidraw1", O_RDWR);
 
 	if (fd < 0) {
@@ -80,21 +80,21 @@ int main(int argc, char **argv)
 		puts("\n");
 	}
 
-	/* Get Raw Name */
+	// Get Raw Name
 	res = ioctl(fd, HIDIOCGRAWNAME(256), buf);
 	if (res < 0)
 		perror("HIDIOCGRAWNAME");
 	else
 		printf("Raw Name: %s\n", buf);
 
-	/* Get Physical Location */
+	 // Get Physical Location 
 	res = ioctl(fd, HIDIOCGRAWPHYS(256), buf);
 	if (res < 0)
 		perror("HIDIOCGRAWPHYS");
 	else
 		printf("Raw Phys: %s\n", buf);
 
-	/* Get Raw Info */
+	 // Get Raw Info 
 	res = ioctl(fd, HIDIOCGRAWINFO, &info);
 	if (res < 0) {
 		perror("HIDIOCGRAWINFO");
@@ -106,8 +106,9 @@ int main(int argc, char **argv)
 		printf("\tproduct: 0x%04hx\n", info.product);
 	}
 
-	/* Set Feature */
-	buf[0] = 0x9; /* Report Number */
+/*
+	// Set Feature
+	buf[0] = 0x9; // Report Number
 	buf[1] = 0xff;
 	buf[2] = 0xff;
 	buf[3] = 0xff;
@@ -115,11 +116,12 @@ int main(int argc, char **argv)
 	if (res < 0)
 		perror("HIDIOCSFEATURE");
 	else
-		printf("ioctl HIDIOCGFEATURE returned: %d\n", res);
+		printf("ioctl HIDIOCSFEATURE returned: %d\n", res);
+*/
 
-	/* Get Feature */
-	buf[0] = 0x9; /* Report Number */
-	res = ioctl(fd, HIDIOCGFEATURE(256), buf);
+	 // Get Feature 
+	buf[0] = 0x0; // Report Number 
+	res = ioctl(fd, HIDIOCGFEATURE(127), buf);
 	if (res < 0) {
 		perror("HIDIOCGFEATURE");
 	} else {
@@ -130,29 +132,52 @@ int main(int argc, char **argv)
 		puts("\n");
 	}
 
-	/* Send a Report to the Device */
+	 // Get Feature 
+	buf[0] = 0x0; // Report Number 
+	res = ioctl(fd, HIDIOCGFEATURE(127), buf);
+	if (res < 0) {
+		perror("HIDIOCGFEATURE");
+	} else {
+		printf("ioctl HIDIOCGFEATURE returned: %d\n", res);
+		printf("Report data (not containing the report number):\n\t");
+		for (i = 0; i < res; i++)
+			printf("%hhx ", buf[i]);
+		puts("\n");
+	}
+
+	 // Send a Report to the Device 
+	
+	memset(buf, 0x0, sizeof(buf));
 	buf[0] = 0x1; 
-	buf[1] = 0x77;
-	res = write(fd, buf, (1<<4));
+	buf[1] = 0xF0;
+	res = write(fd, buf, (65));
 	if (res < 0) {
 		printf("Error: %d\n", errno);
 		perror("write");
 	} else {
 		printf("write() wrote %d bytes\n", res);
 	}
-
-	/* Get a report from the device */
+	
+	 // Get a report from the device 
 	printf("listening.\n");
+	int j = 0;
 	while(1){
-	res = read(fd, buf, 10);
-	if (res < 0) {
-		perror("read");
-	} else {
-		printf("read() read %d bytes:\n\t", res);
-		for (i = 0; i < res; i++)
-			printf("%hhx ", buf[i]);
-		puts("\n");
-	}
+        res = read(fd, buf, 64);
+        if (res < 0) {
+            perror("read");
+        } else {
+            printf("read() read %d bytes:\n\t", res);
+            for (i = 0; i < res; i++)
+                printf("%hhx ", buf[i]);
+            puts("\n");
+        }
+
+        while(1);
+        j = (j + 1) % 0xFF;
+        printf("j=%d\n",j);
+        memset(buf, j, sizeof(buf));
+        res = write(fd, buf, 3);
+        printf("write() returned %d\n", res);
     }
 	close(fd);
 	return 0;

@@ -12,8 +12,12 @@ LUFA_PATH    = lufa-LUFA-140928/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Isrc/ -Werror
 LD_FLAGS     =
 
+
 # Default target
-all:
+all: avrdude
+
+run: all
+	$(MAKE) -C host_app run
 
 # Include LUFA build script makefiles
 include $(LUFA_PATH)/Build/lufa_core.mk

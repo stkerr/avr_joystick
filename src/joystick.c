@@ -52,7 +52,7 @@ USB_ClassInfo_HID_Device_t Joystick_HID_Interface =
 				.ReportINEndpoint             =
 					{
 						.Address              = JOYSTICK_IN_EPADDR,
-						.Size                 = JOYSTICK_EPSIZE,
+						.Size                 = JOYSTICK_IN_EPSIZE,
 						.Banks                = 1,
 					},
 				.PrevReportINBuffer           = PrevJoystickHIDReportBuffer,
@@ -126,6 +126,7 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 
 	ConfigSuccess &= HID_Device_ConfigureEndpoints(&Joystick_HID_Interface);
 
+
 	USB_Device_EnableSOFEvents();
 
 	LEDs_SetAllLEDs(ConfigSuccess ? LEDMASK_USB_READY : LEDMASK_USB_ERROR);
@@ -153,24 +154,24 @@ void EVENT_USB_Device_StartOfFrame(void)
  *
  *  \return Boolean \c true to force the sending of the report, \c false to let the library determine if it needs to be sent
  */
+uint8_t mask = 0xFF;
+uint8_t saved = 0;
 bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDInterfaceInfo,
                                          uint8_t* const ReportID,
                                          const uint8_t ReportType,
                                          void* ReportData,
                                          uint16_t* const ReportSize)
 {
-	USB_JoystickReport_Data_t* JoystickReport = (USB_JoystickReport_Data_t*)ReportData;
+    PORTD = PORTD | 0x01;
+    PORTD = PORTD & ~0x02;
 
-    /*
-     * TODO: For each joystick axis, iterate over each and get the status, then
-     * write it into the descriptor.
-     */
-	//uint8_t JoyStatus_LCL    = Joystick_GetStatus();
-	uint16_t ButtonStatus_LCL = Buttons_GetStatus();
-
-	JoystickReport->Button = (uint32_t)ButtonStatus_LCL | (~((uint32_t)ButtonStatus_LCL << 16) & 0xFFFF0000);	
-
-	*ReportSize = sizeof(USB_JoystickReport_Data_t);
+    *ReportID = 9;
+    mask = (mask + 1) % 0xFF;
+    ((unsigned char*)ReportData)[0] = mask;
+    ((unsigned char*)ReportData)[1] = (unsigned char)(*ReportSize & 0x00FF);
+    ((unsigned char*)ReportData)[2] = (unsigned char)((*ReportSize>>8) & 0xFF);
+    ((unsigned char*)ReportData)[3] = saved;
+    *ReportSize = 64;
 	return false;
 }
 
@@ -182,7 +183,6 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
  *  \param[in] ReportData  Pointer to a buffer where the received report has been stored
  *  \param[in] ReportSize  Size in bytes of the received HID report
  */
-static uint8_t mask=0;
 void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDInterfaceInfo,
                                           const uint8_t ReportID,
                                           const uint8_t ReportType,
@@ -190,7 +190,15 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const uint16_t ReportSize)
 {
 	// Unused (but mandatory for the HID class driver) in this demo, since there are no Host->Device reports
-	mask = (mask + 1) % 0xFF;
-	PORTF = mask;
+	if(ReportSize == 64)
+    {
+        PORTD = 0xF0;
+        saved = ((unsigned char*)ReportData)[1];
+    }
+    else
+    {
+        PORTD = 0x00;
+//        PORTD = 0x0F;
+    }
 }
 

@@ -40,3 +40,4 @@
 *.sym
 *.d
 
+host_app/app

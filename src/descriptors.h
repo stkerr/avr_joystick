@@ -82,10 +82,11 @@
 		#define JOYSTICK_IN_EPADDR              (ENDPOINT_DIR_IN | 1)
 
     /** Endpoint address of the Joystick HID reporting OUT endpoint. */
-		#define JOYSTICK_OUT_EPADDR              (ENDPOINT_DIR_IN | 2)
+		#define JOYSTICK_OUT_EPADDR              (ENDPOINT_DIR_OUT | 2)
 
 		/** Size in bytes of the Joystick HID reporting IN endpoint. */
-		#define JOYSTICK_EPSIZE              8
+		#define JOYSTICK_IN_EPSIZE              8
+		#define JOYSTICK_OUT_EPSIZE             8 
 
 	/* Function Prototypes: */
 		uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,

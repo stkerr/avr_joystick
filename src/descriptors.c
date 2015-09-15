@@ -57,7 +57,7 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] =
 	 *   Max X/Y/Z Axis values:  100
 	 *   Min physical X/Y/Z Axis values (used to determine resolution): -1
 	 *   Max physical X/Y/Z Axis values (used to determine resolution):  1
-	 *   Buttons: 16
+	 *   Buttons: 32
 	 *
 	 * See http://www.freebsddiary.org/APC/usb_hid_usages.php
 	 */
@@ -65,7 +65,7 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] =
     HID_RI_USAGE(8, 0x04),                          \
     HID_RI_COLLECTION(8, 0x01),                     \
         HID_RI_USAGE(8, 0x01),                      \
-        HID_RI_REPORT_ID(8, 1), \
+        /* HID_RI_REPORT_ID(8, 1),*/ \
         HID_RI_COLLECTION(8, 0x00),                 \
             HID_RI_USAGE(8, 0x30), /* X */                   \
             HID_RI_USAGE(8, 0x31), /* Y */                 \
@@ -90,8 +90,12 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] =
         HID_RI_REPORT_SIZE(8, 0x01),                \
         HID_RI_REPORT_COUNT(8, Buttons),            \
         HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE), \
+        \
         HID_RI_REPORT_SIZE(8, (Buttons % 8) ? (8 - (Buttons % 8)) : 0), \
         HID_RI_REPORT_COUNT(8, 0x01),               \
+        HID_RI_INPUT(8, HID_IOF_CONSTANT),          \
+        HID_RI_REPORT_SIZE(8, 8),                  \
+        HID_RI_REPORT_COUNT(8, 54),               \
         HID_RI_INPUT(8, HID_IOF_CONSTANT),          \
         \
         HID_RI_REPORT_ID(8, 2), \
@@ -184,7 +188,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 
 			.EndpointAddress        = JOYSTICK_IN_EPADDR,
 			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
-			.EndpointSize           = JOYSTICK_EPSIZE,
+			.EndpointSize           = JOYSTICK_IN_EPSIZE,
 			.PollingIntervalMS      = 0x05
 		},
 
@@ -194,7 +198,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 
 			.EndpointAddress        = JOYSTICK_OUT_EPADDR,
 			.Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
-			.EndpointSize           = JOYSTICK_EPSIZE,
+			.EndpointSize           = JOYSTICK_OUT_EPSIZE,
 			.PollingIntervalMS      = 0x05
 		}
 
@@ -231,7 +235,7 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 	const uint8_t  DescriptorType   = (wValue >> 8);
 	const uint8_t  DescriptorNumber = (wValue & 0xFF);
 
-	const void* Address = NULL;
+    const void* Address = NULL;
 	uint16_t    Size    = NO_DESCRIPTOR;
 
 	switch (DescriptorType)
