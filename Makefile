@@ -17,6 +17,8 @@ LD_FLAGS     =
 all:
 
 run: avrdude all
+	# Sleep for a second to the let the device initialize to the host
+	sleep 1
 	$(MAKE) -C host_app run
 
 # Include LUFA build script makefiles

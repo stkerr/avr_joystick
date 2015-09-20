@@ -163,7 +163,7 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          uint16_t* const ReportSize)
 {
 
-    mask = (mask + 1) % 0xFF;
+    //mask = (mask + 1) % 0xFF;
     /*
     ((unsigned char*)ReportData)[0] = mask;
     ((unsigned char*)ReportData)[1] = (unsigned char)(*ReportSize & 0x00FF);
@@ -192,6 +192,7 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const uint16_t ReportSize)
 {
     saved = ((unsigned char*)ReportData)[1];
+    PORTD = ((unsigned char*)ReportData)[1];
 	// Unused (but mandatory for the HID class driver) in this demo, since there are no Host->Device reports
 }
 

@@ -14,6 +14,7 @@
 #include <linux/input.h>
 #include <linux/hidraw.h>
 
+#include <libudev.h>
 /*
  * Ugly hack to work around failing compilation on systems that don't
  * yet populate new version of hidraw.h to userspace.
@@ -49,8 +50,8 @@ int main(int argc, char **argv)
 
 	/* Open the Device with non-blocking reads. In real life,
 	   don't use a hard coded path; use libudev instead. */
-//	fd = open("/dev/hidraw1", O_RDWR|O_NONBLOCK);
-	fd = open("/dev/hidraw1", O_RDWR);
+	fd = open("/dev/hidraw1", O_RDWR|O_NONBLOCK);
+//	fd = open("/dev/hidraw1", O_RDWR);
 
 	if (fd < 0) {
 		perror("Unable to open device");
@@ -167,7 +168,7 @@ int main(int argc, char **argv)
 	while(1){
         res = read(fd, buf, 32);
         if (res < 0) {
-            perror("read");
+            //perror("read");
         } else {
             printf("read() read %d bytes:\n\t", res);
             for (i = 0; i < res; i++)
@@ -176,16 +177,16 @@ int main(int argc, char **argv)
         }
 
         count = (count + 1);
-        printf("Count :%x\n", count);
+        //printf("Count :%x\n", count);
         byte = (count & 0xFF00) >> 8;
-        printf("byte :%x\n", byte);
+        //printf("byte :%x\n", byte);
         memset(buf, byte , sizeof(buf));
         res = write(fd, buf, 32);
         if (res < 0) {
             printf("Error: %d\n", errno);
             perror("write");
         } else {
-            printf("write() wrote %d bytes\n", res);
+            //printf("write() wrote %d bytes\n", res);
         }
     }
 	close(fd);
