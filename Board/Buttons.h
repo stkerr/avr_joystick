@@ -66,25 +66,16 @@
 		#if !defined(__DOXYGEN__)
 			static inline void Buttons_Init(void)
 			{
-				// TODO: Initialize the appropriate port pins as an inputs here, with pull-ups
-				DDRB = 0x00; // use B pins as input
-				DDRD = 0xFF; // use D pins as output
-				DDRF = 0xFF;
-				PORTB = 0xFF;
-				PORTD = 0xFF; // pull-up, default to on
-				PORTF = 0xFF;
 			}
 
 			static inline void Buttons_Disable(void)
 			{
-				// TODO: Clear the appropriate port pins as high impedance inputs here
 			}
 
 			static inline uint16_t Buttons_GetStatus(void) ATTR_WARN_UNUSED_RESULT;
 			static inline uint16_t Buttons_GetStatus(void)
 			{
-				// TODO: Return current button status here, debounced if required
-				return (PIND << 8) | PINB;
+				return 0;
 			}
 		#endif
 
@@ -94,4 +85,3 @@
 		#endif
 
 #endif
-

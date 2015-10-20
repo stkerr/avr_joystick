@@ -82,45 +82,40 @@
 			static inline void LEDs_Init(void)
 			{
 				// TODO: Add code to initialize LED port pins as outputs here
-				DDRE = 0xFF;
+				DDRB = 0xFF; // use B pins as outputs
+				DDRD = 0xFF; // use D pins as output
+
+				DDRE = 0xFF; // unused outputs
+				DDRF = 0xFF; // unused outputs
+
+				PORTB = 0x00; // start to turned off
+				PORTD = 0xFF; // pull-up, default to on
+				PORTE = 0x00; // unused, so turn off
+				PORTF = 0x00; // unused, so turn off
 			}
 
 			static inline void LEDs_Disable(void)
 			{
-				// TODO: Clear the LED port pins as high impedance inputs here
-				DDRE = 0x0;
 			}
 
 			static inline void LEDs_TurnOnLEDs(const uint8_t LEDMask)
 			{
-				// TODO: Add code to turn on LEDs given in the LEDMask mask here, leave others as-is
-				PORTE |= LEDMask;
-			}
 
+			}
 			static inline void LEDs_TurnOffLEDs(const uint8_t LEDMask)
 			{
-				// TODO: Add code to turn off LEDs given in the LEDMask mask here, leave others as-is
-				PORTE &= ~LEDMask;
 			}
 
 			static inline void LEDs_SetAllLEDs(const uint8_t LEDMask)
 			{
-				// TODO: Add code to turn on only LEDs given in the LEDMask mask here, all others off
-				PORTE = 0xFF;
 			}
 
 			static inline void LEDs_ChangeLEDs(const uint8_t LEDMask, const uint8_t ActiveMask)
 			{
-				// TODO: Add code to set the Leds in the given LEDMask to the status given in ActiveMask here
 			}
 
 			static inline void LEDs_ToggleLEDs(const uint8_t LEDMask)
 			{
-				// TODO: Add code to toggle the Leds in the given LEDMask, ignoring all others
-				int fixed_value = PORTE & ~LEDMask;
-				int moving_value = PORTE & LEDMask;
-				moving_value = ~moving_value;
-				PORTE = moving_value | fixed_value; 
 			}
 
 			static inline uint8_t LEDs_GetLEDs(void) ATTR_WARN_UNUSED_RESULT;
@@ -137,4 +132,3 @@
 		#endif
 
 #endif
-

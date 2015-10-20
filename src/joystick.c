@@ -35,7 +35,7 @@
  */
 
 #include "joystick.h"
-
+#include "switch_type.h"
 
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevJoystickHIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
@@ -71,6 +71,16 @@ int main(void)
 	LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
 
+	uint8_t type = 0;
+	for (;;)
+	{
+		int i = 0;
+		for(i = 0; i < 100; i++)
+			_delay_ms(5);
+		type = (type + 1) % 6;
+		switch_led_type(type);
+	}
+
 	for (;;)
 	{
 		HID_Device_USBTask(&Joystick_HID_Interface);
@@ -81,24 +91,12 @@ int main(void)
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
 {
-#if (ARCH == ARCH_AVR8)
 	/* Disable watchdog if enabled by bootloader/fuses */
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
 
 	/* Disable clock division */
 	clock_prescale_set(clock_div_1);
-#elif (ARCH == ARCH_XMEGA)
-	/* Start the PLL to multiply the 2MHz RC oscillator to 32MHz and switch the CPU core to run from it */
-	XMEGACLK_StartPLL(CLOCK_SRC_INT_RC2MHZ, 2000000, F_CPU);
-	XMEGACLK_SetCPUClockSource(CLOCK_SRC_PLL);
-
-	/* Start the 32MHz internal RC oscillator and start the DFLL to increase it to 48MHz using the USB SOF as a reference */
-	XMEGACLK_StartInternalOscillator(CLOCK_SRC_INT_RC32MHZ);
-	XMEGACLK_StartDFLL(CLOCK_SRC_INT_RC32MHZ, DFLL_REF_INT_USBSOF, F_USB);
-
-	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
-#endif
 
 	/* Hardware Initialization */
 	Joystick_Init();
@@ -162,17 +160,6 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          void* ReportData,
                                          uint16_t* const ReportSize)
 {
-
-    //mask = (mask + 1) % 0xFF;
-    /*
-    ((unsigned char*)ReportData)[0] = mask;
-    ((unsigned char*)ReportData)[1] = (unsigned char)(*ReportSize & 0x00FF);
-    ((unsigned char*)ReportData)[2] = (unsigned char)((*ReportSize>>8) & 0xFF);
-    ((unsigned char*)ReportData)[3] = PINB;
-    */
-    ((USB_JoystickReport_Data_t*)ReportData)->Button = PINB;
-    ((USB_JoystickReport_Data_t*)ReportData)->X= mask;
-    ((USB_JoystickReport_Data_t*)ReportData)->Y= saved;
     *ReportSize = sizeof(USB_JoystickReport_Data_t);
 	return false;
 }
@@ -195,4 +182,3 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
     PORTD = ((unsigned char*)ReportData)[1];
 	// Unused (but mandatory for the HID class driver) in this demo, since there are no Host->Device reports
 }
-
