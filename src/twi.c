@@ -53,6 +53,9 @@ uint8_t TWI_GetStatus(void)
     return status;
 }
 
+
+static uint8_t stored_states[5] = {0};
+
 void TWI_SetState(uint8_t chip_address, uint8_t data)
 {
     TWI_Start();
@@ -67,4 +70,11 @@ void TWI_SetState(uint8_t chip_address, uint8_t data)
     TWI_Write(data);
 
     TWI_Stop();
+
+    stored_states[chip_address] = data;
+}
+
+uint8_t TWI_GetState(uint8_t chip_address)
+{
+    return stored_states[chip_address];
 }

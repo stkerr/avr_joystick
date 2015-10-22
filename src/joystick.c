@@ -32,6 +32,7 @@
 #include "joystick.h"
 #include "switch_type.h"
 #include "twi.h"
+#include "interface.h"
 
 /*
 	LED headers
@@ -67,6 +68,8 @@ USB_ClassInfo_HID_Device_t Joystick_HID_Interface =
  */
 int main(void)
 {
+	int i = 0;
+
 	SetupHardware();
 
 	LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
@@ -78,6 +81,22 @@ int main(void)
 	 * a previous run.
 	 */
 	CLEAR_ALL_LIGHTS;
+
+	TWI_SetState(OTHER_DIRECTION, 0x20);
+
+	for(;;)
+	{}
+	
+	for (;;)
+	{
+		update_main_target(i++);
+		if(i > 90)
+			i = 0;
+
+		int j = 0;
+		for(j = 0; j < 10; j++)
+			_delay_ms(5);
+	}
 
 	set_lock(1);
 	TWI_SetState(MAIN_DIRECTION, 0xFF);

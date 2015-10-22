@@ -1,6 +1,8 @@
 #ifndef __LED_MAPS__
 #define __LED_MAPS__
 
+#include "twi.h"
+ 
 enum chip_drivers {
 	SIGNAL_STRENGTH_LOW = 0x0,
 	SIGNAL_STRENGTH_HIGH = 0x1,
