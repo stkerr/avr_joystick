@@ -36,6 +36,7 @@
 
 #include "joystick.h"
 #include "switch_type.h"
+#include "twi.h"
 
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevJoystickHIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
@@ -71,14 +72,30 @@ int main(void)
 	LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
 
-	uint8_t type = 0;
+	TWI_Init();
+
+
+	int counter = 0;
 	for (;;)
 	{
-		int i = 0;
-		for(i = 0; i < 100; i++)
+		int i;
+
+		TWI_Start();
+
+		// chip address
+		TWI_Write((0xc<<4) | 0x0);
+
+		// subaddress command - store & write
+		TWI_Write(0x44);
+
+		// data bits
+		TWI_Write(counter);
+		counter = (counter + 1) % 0xFF;
+
+		TWI_Stop();
+
+		for(i = 0 ; i < 100; i++)
 			_delay_ms(5);
-		type = (type + 1) % 6;
-		switch_led_type(type);
 	}
 
 	for (;;)
@@ -87,6 +104,7 @@ int main(void)
 		USB_USBTask();
 	}
 }
+
 
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
@@ -102,6 +120,7 @@ void SetupHardware(void)
 	Joystick_Init();
 	LEDs_Init();
 	Buttons_Init();
+	TWI_Init();
 	USB_Init();
 }
 
