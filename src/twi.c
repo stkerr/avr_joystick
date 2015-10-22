@@ -52,3 +52,19 @@ uint8_t TWI_GetStatus(void)
     status = TWSR & 0xF8;
     return status;
 }
+
+void TWI_SetState(uint8_t chip_address, uint8_t data)
+{
+    TWI_Start();
+
+    // chip address
+    TWI_Write((0xc<<4) | ((chip_address & 0xF) << 1));
+
+    // subaddress command - store & write
+    TWI_Write(0x44);
+
+    // data bits
+    TWI_Write(data);
+
+    TWI_Stop();
+}

@@ -28,15 +28,15 @@
   this software.
 */
 
-/** \file
- *
- *  Main source file for the Joystick demo. This file contains the main tasks of
- *  the demo and is responsible for the initial application hardware configuration.
- */
-
+#include <stdlib.h>
 #include "joystick.h"
 #include "switch_type.h"
 #include "twi.h"
+
+/*
+	LED headers
+ */
+#include "led_map.h"
 
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevJoystickHIDReportBuffer[sizeof(USB_JoystickReport_Data_t)];
@@ -72,31 +72,16 @@ int main(void)
 	LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
 
-	TWI_Init();
+	/*
+	 * Need to clear all lights before starting
+	 * up, since they may be turned on still from
+	 * a previous run.
+	 */
+	CLEAR_ALL_LIGHTS;
 
-
-	int counter = 0;
-	for (;;)
-	{
-		int i;
-
-		TWI_Start();
-
-		// chip address
-		TWI_Write((0xc<<4) | 0x0);
-
-		// subaddress command - store & write
-		TWI_Write(0x44);
-
-		// data bits
-		TWI_Write(counter);
-		counter = (counter + 1) % 0xFF;
-
-		TWI_Stop();
-
-		for(i = 0 ; i < 100; i++)
-			_delay_ms(5);
-	}
+	set_lock(1);
+	TWI_SetState(MAIN_DIRECTION, 0xFF);
+	TWI_SetState(OTHER_DIRECTION, 0xFF);
 
 	for (;;)
 	{
