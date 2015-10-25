@@ -54,6 +54,34 @@ uint8_t degrees_to_value(int degrees)
 		return 0x80;
 }
 
+uint8_t remap_main(uint8_t original)
+{
+	/*
+	Due to some incorrent PCB layout, need
+	to re-route some signals from their
+	logical values to their real values.
+	*/
+	uint8_t new_value = 0;
+	if(original & 0x80)
+		new_value |= 0x01;
+	if(original & 0x40)
+		new_value |= 0x40;
+	if(original & 0x20)
+		new_value |= 0x04;
+	if(original & 0x10)
+		new_value |= 0x08;
+	if(original & 0x08)
+		new_value |= 0x10;
+	if(original & 0x04)
+		new_value |= 0x20;
+	if(original & 0x02)
+		new_value |= 0x02;
+	if(original & 0x01)
+		new_value |= 0x80;
+
+	return new_value;
+}
+
 void update_main_target(int direction)
 {
 	/*
@@ -61,7 +89,42 @@ void update_main_target(int direction)
 	most intuitive pins on the TPIC, so need to translate the
 	value here first.
 	*/
-	TWI_SetState(MAIN_DIRECTION, degrees_to_value(direction));
+	uint8_t new_state = remap_main(degrees_to_value(direction));
+	TWI_SetState(MAIN_DIRECTION, new_state);
+}
+
+uint8_t remap_other(uint8_t original)
+{
+	/*
+	Due to some incorrent PCB layout, need
+	to re-route some signals from their
+	logical values to their real values.
+	*/
+
+	// Other LED #7 is incorrectly located, so never use it
+
+	uint8_t new_value = 0;
+
+	if(original & 0x80)
+		new_value |= 0x01;
+	if(original & 0x40)
+		new_value |= 0x02;
+	if(original & 0x20)
+		new_value |= 0x04;
+	if(original & 0x10)
+		new_value |= 0x08;
+	if(original & 0x08)
+		new_value |= 0x10;
+	if(original & 0x04)
+		new_value |= 0x20;
+	if(original & 0x02)
+		new_value |= 0x40;
+	if(original & 0x01)
+		new_value |= 0x80;
+
+	new_value &= 0xFE;
+
+	return new_value;
 }
 
 void update_other_target(uint8_t count, int* direction)
@@ -71,8 +134,72 @@ void update_other_target(uint8_t count, int* direction)
 
 	for(i = 0; i < count; i++)
 	{
-		new_state |= degrees_to_value(direction[i]);
+		uint8_t temp = remap_other(degrees_to_value(direction[i]));
+		new_state |= temp;
 	}
 
 	TWI_SetState(OTHER_DIRECTION, new_state);
+}
+
+uint8_t other_register = 0;
+
+void set_above(uint8_t value)
+{
+	if(value)
+		other_register |= 0x2;
+	else
+		other_register &= 0xFD;
+}
+
+void set_below(uint8_t value)
+{
+	if(value)
+		other_register |= 0x4;
+	else
+		other_register &= 0xFB;
+}
+
+void set_serviceability(uint8_t value)
+{
+	if(value)
+		other_register |= 0x8;
+	else
+		other_register &= 0xF7;
+}
+
+void set_other_left(uint8_t value)
+{
+	if(value)
+		other_register |= 0x10;
+	else
+		other_register &= 0xEF;
+}
+
+void set_other_right(uint8_t value)
+{
+	if(value)
+		other_register |= 0x20;
+	else
+		other_register &= 0xDF;
+}
+
+void set_main_left(uint8_t value)
+{
+	if(value)
+		other_register |= 0x40;
+	else
+		other_register &= 0xBF;
+}
+
+void set_main_right(uint8_t value)
+{
+	if(value)
+		other_register |= 0x80;
+	else
+		other_register &= 0x7F;
+}
+
+void update_others()
+{
+	TWI_SetState(MISC_DRIVER, other_register);
 }

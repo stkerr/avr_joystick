@@ -81,17 +81,24 @@ int main(void)
 	 * a previous run.
 	 */
 	CLEAR_ALL_LIGHTS;
-
-	TWI_SetState(OTHER_DIRECTION, 0x20);
-
-	for(;;)
-	{}
 	
-	for (;;)
+	TWI_SetState(MISC_DRIVER, 0xFF);
+	TWI_SetState(SIGNAL_STRENGTH_LOW, 0xFF);
+	TWI_SetState(SIGNAL_STRENGTH_HIGH, 0xFF);
+	TWI_SetState(OTHER_DIRECTION, 0xFF);
+	TWI_SetState(MAIN_DIRECTION, 0xFF);
+	set_lock(1);
+	switch_led_type(AWACS);
+	
+	for(;;){}
+
+	for (;;i++)
 	{
-		update_main_target(i++);
+		// update_main_target(i);
 		if(i > 90)
-			i = 0;
+			i = -90;
+
+		update_other_target(1, &i);
 
 		int j = 0;
 		for(j = 0; j < 10; j++)

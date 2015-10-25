@@ -22,27 +22,27 @@ void switch_led_type(enum TYPE type)
     {
         case AIRBORNE:
             DDRB = (1<<6) | (1 << 4) | 0x0F;
-            PORTB = (1<<4);
+            PORTB = (1<<4) | (PORTB & 0x0F);
             break;
         case LONG_RANGE:
             DDRB = (1<<6) | (1 << 4) | 0x0F;
-            PORTB = (1<<6);
+            PORTB = (1<<6) | (PORTB & 0x0F);
             break;
         case MEDIUM_RANGE:
             DDRB = (1 << 5) | (1 << 4) | 0x0F;
-            PORTB = (1<<4);
+            PORTB = (1<<4) | (PORTB & 0x0F);
             break;
         case SHORT_RANGE:
             DDRB = (1<<6) | (1 << 5) | 0x0F;
-            PORTB = (1<<5);
+            PORTB = (1<<5) | (PORTB & 0x0F);
             break;
         case EARLY_WARNING:
             DDRB = (1 << 5) | (1 << 4) | 0x0F;
-            PORTB = (1<<5);
+            PORTB = (1<<5) | (PORTB & 0x0F);
             break;
         case AWACS:
             DDRB = (1<<6) | (1 << 5) | 0x0F;
-            PORTB = (1<<6);
+            PORTB = (1<<6) | (PORTB & 0x0F);
             break;
     }
 }

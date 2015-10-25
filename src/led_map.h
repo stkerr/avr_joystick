@@ -17,7 +17,8 @@ enum chip_drivers {
 	TWI_SetState(MISC_DRIVER, 0); \
 	TWI_SetState(OTHER_DIRECTION, 0); \
 	TWI_SetState(MAIN_DIRECTION, 0); \
-	set_lock(0);
+	set_lock(0); \
+	other_register = 0;
 
 void inline set_lock(uint8_t value)
 {
@@ -26,5 +27,14 @@ void inline set_lock(uint8_t value)
 	else
 		PORTB &= 0xFE; 
 }
+
+extern uint8_t other_register;
+void update_others(void);
+void set_above(uint8_t value);
+void set_below(uint8_t value);
+void set_other_left(uint8_t value);
+void set_main_left(uint8_t value);
+void set_other_right(uint8_t value);
+void set_main_right(uint8_t value);
 
 #endif
