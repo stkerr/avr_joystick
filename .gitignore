@@ -41,3 +41,5 @@
 *.d
 
 host_app/app
+cscope.files
+
