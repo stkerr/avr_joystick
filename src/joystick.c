@@ -68,7 +68,7 @@ USB_ClassInfo_HID_Device_t Joystick_HID_Interface =
  */
 int main(void)
 {
-	int i = 0;
+	// int i = 0;
 
 	SetupHardware();
 
@@ -76,12 +76,6 @@ int main(void)
 	GlobalInterruptEnable();
 
 	/*
-	 * Need to clear all lights before starting
-	 * up, since they may be turned on still from
-	 * a previous run.
-	 */
-	CLEAR_ALL_LIGHTS;
-	
 	TWI_SetState(MISC_DRIVER, 0xFF);
 	TWI_SetState(SIGNAL_STRENGTH_LOW, 0xFF);
 	TWI_SetState(SIGNAL_STRENGTH_HIGH, 0xFF);
@@ -89,25 +83,32 @@ int main(void)
 	TWI_SetState(MAIN_DIRECTION, 0xFF);
 	set_lock(1);
 	switch_led_type(AWACS);
-	
-	for(;;){}
+	*/
 
-	for (;;i++)
-	{
-		// update_main_target(i);
-		if(i > 90)
-			i = -90;
+	/*
+	 * Need to clear all lights before starting
+	 * up, since they may be turned on still from
+	 * a previous run.
+	 */
+	CLEAR_ALL_LIGHTS;
 
-		update_other_target(1, &i);
+	// for (;;i++)
+	// {
+	// 	switch_led_type(i);
+	// 	update_main_target(i);
+	// 	if(i > 90)
+	// 		i = -90;
 
-		int j = 0;
-		for(j = 0; j < 10; j++)
-			_delay_ms(5);
-	}
+	// 	update_other_target(1, &i);
 
-	set_lock(1);
+	// 	int j = 0;
+	// 	for(j = 0; j < 10; j++)
+	// 		_delay_ms(5);
+	// }
+
+	// set_lock(1);
 	TWI_SetState(MAIN_DIRECTION, 0xFF);
-	TWI_SetState(OTHER_DIRECTION, 0xFF);
+	// TWI_SetState(OTHER_DIRECTION, 0xFF);
 
 	for (;;)
 	{
@@ -190,6 +191,8 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          void* ReportData,
                                          uint16_t* const ReportSize)
 {
+	// Echo back the data to the PC
+	((char*)ReportData)[0] = saved;
     *ReportSize = sizeof(USB_JoystickReport_Data_t);
 	return false;
 }
@@ -208,7 +211,8 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const void* ReportData,
                                           const uint16_t ReportSize)
 {
+	// Save the data received from the PC
     saved = ((unsigned char*)ReportData)[1];
-    PORTD = ((unsigned char*)ReportData)[1];
+
 	// Unused (but mandatory for the HID class driver) in this demo, since there are no Host->Device reports
 }
