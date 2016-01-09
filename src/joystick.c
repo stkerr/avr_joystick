@@ -95,19 +95,21 @@ int main(void)
 	 */
 	CLEAR_ALL_LIGHTS;
 
-	// for (;;i++)
-	// {
+	/*
+	for (int8_t i=0;;i++)
+	{
 	// 	switch_led_type(i);
-	// 	update_main_target(i);
-	// 	if(i > 90)
-	// 		i = -90;
+		update_main_target(i);
+		if(i > 90)
+			i = -90;
 
 	// 	update_other_target(1, &i);
 
-	// 	int j = 0;
-	// 	for(j = 0; j < 10; j++)
-	// 		_delay_ms(5);
-	// }
+		int j = 0;
+		for(j = 0; j < 10; j++)
+			_delay_ms(5);
+	}
+	*/
 
 	// set_lock(1);
 	// TWI_SetState(MAIN_DIRECTION, 0xFF);
@@ -218,22 +220,34 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 	
 	CLEAR_ALL_LIGHTS;
     USB_JoystickReport_Data_t *report = (USB_JoystickReport_Data_t*)ReportData;
-	if((report->UpdateMask & (1 << 7)) == 0x80)
-		TWI_SetState(MISC_DRIVER, report->MiscDriver);
-	if((report->UpdateMask & (1 << 6)) == 0x40)
+	if((report->UpdateMask & UPDATE_MISC) == UPDATE_MISC)
+	{
+		set_lock(report->MiscDriver & LOCK_LED);
+		set_above(report->MiscDriver & ABOVE_LED);
+		set_below(report->MiscDriver & BELOW_LED);
+		set_other_left(report->MiscDriver & OTHER_LEFT_LED);
+		set_other_right(report->MiscDriver & OTHER_RIGHT_LED);
+		set_main_left(report->MiscDriver & MAIN_LEFT_LED);
+		set_main_right(report->MiscDriver & MAIN_RIGHT_LED);
+		set_serviceability(report->MiscDriver & SERVICABILITY_LED);
+		update_others();
+	}
+	if((report->UpdateMask & UPDATE_SIGNAL_STRENGTH) == UPDATE_SIGNAL_STRENGTH)
 	{
 		update_signal_strength(report->SignalStrength);
 	}
-	if((report->UpdateMask & (1 << 5)) == 0x20)
+	if((report->UpdateMask & UPDATE_OTHER_DIRECTION) == UPDATE_OTHER_DIRECTION)
 	{
 		TWI_SetState(OTHER_DIRECTION, report->OtherDirection & 0xFE); // ignore 0x1 due to Rev A board limitations
 	}
-	if((report->UpdateMask & (1 << 4)) == 0x10)
+	if((report->UpdateMask & UPDATE_MAIN_DIRECTION) == UPDATE_MAIN_DIRECTION)
 	{
-		update_main_target(MAIN_DIRECTION);
+		update_main_target(report->MainDirection);
 	}
-	if((report->UpdateMask & (1 << 3)) == 0x08)
-	{}
+	if((report->UpdateMask & UPDATE_RADAR_TYPE) == UPDATE_RADAR_TYPE)
+	{
+		switch_led_type(report->RadarType);
+	}
 	if((report->UpdateMask & (1 << 2)) == 0x04)
 	{}
 	if((report->UpdateMask & (1 << 1)) == 0x02)

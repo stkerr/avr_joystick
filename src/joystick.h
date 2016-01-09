@@ -51,19 +51,7 @@
 		#include <LUFA/Drivers/USB/USB.h>
 		#include <LUFA/Platform/Platform.h>
 
-	/* Type Defines: */
-		/** Type define for the joystick HID report structure, for creating and sending HID reports to the host PC.
-		 *  This mirrors the layout described to the host in the HID report descriptor, in Descriptors.c.
-		 */
-		typedef struct
-		{
-			int8_t UpdateMask; // If the given bits are set, update the following fields
-			int8_t  MiscDriver;
-			uint8_t  SignalStrength;
-			int8_t  OtherDirection;
-			int8_t  MainDirection;
-			uint8_t padding[27];
-		} USB_JoystickReport_Data_t;
+		#include "report.h"
 
 	/* Macros: */
 		/** LED mask for the library LED driver, to indicate that the USB interface is not ready. */

@@ -44,5 +44,10 @@ void switch_led_type(enum TYPE type)
             DDRB = (1<<6) | (1 << 5) | 0x0F;
             PORTB = (1<<6) | (PORTB & 0x0F);
             break;
+        case OFF:
+        default:
+            DDRB = 0x0F; // turn off all of port B
+            PORTB = PORTB & 0x0F;
+            break;
     }
 }

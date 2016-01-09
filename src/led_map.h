@@ -36,5 +36,6 @@ void set_other_left(uint8_t value);
 void set_main_left(uint8_t value);
 void set_other_right(uint8_t value);
 void set_main_right(uint8_t value);
+void set_serviceability(uint8_t value);
 
 #endif

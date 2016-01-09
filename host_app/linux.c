@@ -38,17 +38,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include <stdint.h>
-typedef struct
-{
-    int8_t report_number;
-    int8_t UpdateMask; // If the given bits are set, update the following fields
-    int8_t  MiscDriver; /**< Current absolute joystick position, as a signed 8-bit integer */
-    int8_t  SignalStrength;
-    int8_t  OtherDirection;
-    int8_t  MainDirection;
-    uint8_t padding[27];
-} __attribute__((packed)) USB_JoystickReport_Data_t;
+#include "../src/report.h"
 
 const char *bus_str(int bus);
 
@@ -62,6 +52,11 @@ int usage(char **argv)
     return 1;
 }
 
+typedef struct _wrapped_report {
+	uint8_t report_number;
+	USB_JoystickReport_Data_t report;
+} __attribute__((packed)) wrapped_report;
+
 int main(int argc, char **argv)
 {
 	int fd;
@@ -69,7 +64,7 @@ int main(int argc, char **argv)
 	char buf[256];
 	struct hidraw_report_descriptor rpt_desc;
 	struct hidraw_devinfo info;
-    USB_JoystickReport_Data_t report;
+    wrapped_report report;
 
 	/* Open the Device with non-blocking reads. In real life,
 	   don't use a hard coded path; use libudev instead. */
@@ -161,23 +156,37 @@ int main(int argc, char **argv)
 	}
 
 
-    uint8_t count = 0;
+    uint8_t bit_count = 0; // one bit set per iteration
+    uint8_t raw_count = 0; // increments by 1
+    int8_t signed_count = 0;
+
+    // clear the lights
     while(1)
     {
         // Set Feature
         memset(&report, 0, sizeof(report));
         report.report_number = 9;
-        report.UpdateMask = 1<<6;
-        report.MiscDriver = 0x00;
-        report.OtherDirection = 0xFF;
-        report.MainDirection = 000;
-        report.SignalStrength = count;
+        report.report.UpdateMask = UPDATE_OTHER_DIRECTION | UPDATE_MAIN_DIRECTION | UPDATE_RADAR_TYPE | UPDATE_MISC | UPDATE_SIGNAL_STRENGTH;
+        report.report.MiscDriver = bit_count;
+        report.report.OtherDirection = remap_other(degrees_to_value(signed_count));
+        report.report.MainDirection = -signed_count;
+        report.report.SignalStrength = raw_count;
+        report.report.RadarType = raw_count % 8;
         //printf("report size: %d\n", sizeof(report));
         res = ioctl(fd, HIDIOCSFEATURE(sizeof(report)), &report);
 
-        printf("count: %d\n", count);
+        printf("raw_count: %d\n", raw_count);
+        
+        // sleep for a bit
         usleep(1000*10);
-        count++;
+        
+        if(bit_count == 0)
+        	bit_count = 1;
+        else
+        	bit_count = bit_count << 1;
+
+        raw_count++;
+        signed_count++;
     }
 
 	close(fd);
