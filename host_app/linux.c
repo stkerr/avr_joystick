@@ -38,7 +38,29 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include <stdint.h>
+typedef struct
+{
+    int8_t report_number;
+    int8_t UpdateMask; // If the given bits are set, update the following fields
+    int8_t  MiscDriver; /**< Current absolute joystick position, as a signed 8-bit integer */
+    int8_t  SignalStrength;
+    int8_t  OtherDirection;
+    int8_t  MainDirection;
+    uint8_t padding[27];
+} __attribute__((packed)) USB_JoystickReport_Data_t;
+
 const char *bus_str(int bus);
+
+int usage(char **argv)
+{
+    printf("Usage:\n");
+    printf("\t%s <USB device>\n", argv[0]);
+    printf("\n");
+    printf("The device is likely going to be /dev/hidraw1 or /dev/hidraw2\n");
+
+    return 1;
+}
 
 int main(int argc, char **argv)
 {
@@ -47,11 +69,14 @@ int main(int argc, char **argv)
 	char buf[256];
 	struct hidraw_report_descriptor rpt_desc;
 	struct hidraw_devinfo info;
+    USB_JoystickReport_Data_t report;
 
 	/* Open the Device with non-blocking reads. In real life,
 	   don't use a hard coded path; use libudev instead. */
-	fd = open("/dev/hidraw1", O_RDWR|O_NONBLOCK);
-//	fd = open("/dev/hidraw1", O_RDWR);
+	if (argc != 2)
+	    return usage(argv);
+
+    fd = open(argv[1], O_RDWR);
 
 	if (fd < 0) {
 		perror("Unable to open device");
@@ -74,6 +99,7 @@ int main(int argc, char **argv)
 	res = ioctl(fd, HIDIOCGRDESC, &rpt_desc);
 	if (res < 0) {
 		perror("HIDIOCGRDESC");
+
 	} else {
 		printf("Report Descriptor:\n");
 		for (i = 0; i < rpt_desc.size; i++)
@@ -107,22 +133,10 @@ int main(int argc, char **argv)
 		printf("\tproduct: 0x%04hx\n", info.product);
 	}
 
-/*
-	// Set Feature
-	buf[0] = 0x9; // Report Number
-	buf[1] = 0xff;
-	buf[2] = 0xff;
-	buf[3] = 0xff;
-	res = ioctl(fd, HIDIOCSFEATURE(4), buf);
-	if (res < 0)
-		perror("HIDIOCSFEATURE");
-	else
-		printf("ioctl HIDIOCSFEATURE returned: %d\n", res);
-*/
 
 	 // Get Feature 
 	buf[0] = 0x0; // Report Number 
-	res = ioctl(fd, HIDIOCGFEATURE(127), buf);
+	res = ioctl(fd, HIDIOCGFEATURE(32), buf);
 	if (res < 0) {
 		perror("HIDIOCGFEATURE");
 	} else {
@@ -135,7 +149,7 @@ int main(int argc, char **argv)
 
 	 // Get Feature 
 	buf[0] = 0x0; // Report Number 
-	res = ioctl(fd, HIDIOCGFEATURE(127), buf);
+	res = ioctl(fd, HIDIOCGFEATURE(32), buf);
 	if (res < 0) {
 		perror("HIDIOCGFEATURE");
 	} else {
@@ -146,49 +160,26 @@ int main(int argc, char **argv)
 		puts("\n");
 	}
 
-	 // Send a Report to the Device 
-	
-	buf[0] = 0x1; 
-	buf[1] = 0xF0;
-	/*
-	res = write(fd, buf, (65));
-	if (res < 0) {
-		printf("Error: %d\n", errno);
-		perror("write");
-	} else {
-		printf("write() wrote %d bytes\n", res);
-	}
-	*/
-	
-	 // Get a report from the device 
-	printf("listening.\n");
-	int j = 0;
-	unsigned int count = 0;
-	int byte;
-	while(1){
-        res = read(fd, buf, 32);
-        if (res < 0) {
-            //perror("read");
-        } else {
-            printf("read() read %d bytes:\n\t", res);
-            for (i = 0; i < res; i++)
-                printf("%hhx ", buf[i]);
-            puts("\n");
-        }
 
-        count = (count + 1);
-        //printf("Count :%x\n", count);
-        byte = (count & 0xFF00) >> 8;
-        //printf("byte :%x\n", byte);
-        memset(buf, byte , sizeof(buf));
-        res = write(fd, buf, 32);
-        if (res < 0) {
-            printf("Error: %d\n", errno);
-            perror("write");
-        } else {
-            //printf("write() wrote %d bytes\n", res);
-        }
+    uint8_t count = 0;
+    while(1)
+    {
+        // Set Feature
+        memset(&report, 0, sizeof(report));
+        report.report_number = 9;
+        report.UpdateMask = 1<<6;
+        report.MiscDriver = 0x00;
+        report.OtherDirection = 0xFF;
+        report.MainDirection = 000;
+        report.SignalStrength = count;
+        //printf("report size: %d\n", sizeof(report));
+        res = ioctl(fd, HIDIOCSFEATURE(sizeof(report)), &report);
+
+        printf("count: %d\n", count);
+        usleep(1000*10);
+        count++;
     }
+
 	close(fd);
 	return 0;
 }

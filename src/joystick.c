@@ -75,15 +75,18 @@ int main(void)
 	LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
 
-	/*
-	TWI_SetState(MISC_DRIVER, 0xFF);
-	TWI_SetState(SIGNAL_STRENGTH_LOW, 0xFF);
-	TWI_SetState(SIGNAL_STRENGTH_HIGH, 0xFF);
-	TWI_SetState(OTHER_DIRECTION, 0xFF);
-	TWI_SetState(MAIN_DIRECTION, 0xFF);
-	set_lock(1);
-	switch_led_type(AWACS);
-	*/
+	CLEAR_ALL_LIGHTS;
+
+	// TWI_SetState(MISC_DRIVER, 0xFF);
+	// TWI_SetState(SIGNAL_STRENGTH_LOW, 0xFF);
+	// TWI_SetState(SIGNAL_STRENGTH_HIGH, 0xFF);
+	// for(;;){}
+
+	// TWI_SetState(OTHER_DIRECTION, 0xFF);
+	// TWI_SetState(MAIN_DIRECTION, 0xFF);
+	// set_lock(1);
+	// switch_led_type(AWACS);
+	
 
 	/*
 	 * Need to clear all lights before starting
@@ -107,7 +110,7 @@ int main(void)
 	// }
 
 	// set_lock(1);
-	TWI_SetState(MAIN_DIRECTION, 0xFF);
+	// TWI_SetState(MAIN_DIRECTION, 0xFF);
 	// TWI_SetState(OTHER_DIRECTION, 0xFF);
 
 	for (;;)
@@ -184,7 +187,7 @@ void EVENT_USB_Device_StartOfFrame(void)
  *  \return Boolean \c true to force the sending of the report, \c false to let the library determine if it needs to be sent
  */
 uint8_t mask = 0xFF;
-uint8_t saved = 0;
+uint8_t saved[32] = {0};
 bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDInterfaceInfo,
                                          uint8_t* const ReportID,
                                          const uint8_t ReportType,
@@ -192,7 +195,8 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          uint16_t* const ReportSize)
 {
 	// Echo back the data to the PC
-	((char*)ReportData)[0] = saved;
+	// *(((uint16_t*)ReportData)+2) = *ReportSize;
+	memcpy(ReportData, saved, 32);
     *ReportSize = sizeof(USB_JoystickReport_Data_t);
 	return false;
 }
@@ -211,8 +215,37 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const void* ReportData,
                                           const uint16_t ReportSize)
 {
-	// Save the data received from the PC
-    saved = ((unsigned char*)ReportData)[1];
+	
+	CLEAR_ALL_LIGHTS;
+    USB_JoystickReport_Data_t *report = (USB_JoystickReport_Data_t*)ReportData;
+	if((report->UpdateMask & (1 << 7)) == 0x80)
+		TWI_SetState(MISC_DRIVER, report->MiscDriver);
+	if((report->UpdateMask & (1 << 6)) == 0x40)
+	{
+		update_signal_strength(report->SignalStrength);
+	}
+	if((report->UpdateMask & (1 << 5)) == 0x20)
+	{
+		TWI_SetState(OTHER_DIRECTION, report->OtherDirection & 0xFE); // ignore 0x1 due to Rev A board limitations
+	}
+	if((report->UpdateMask & (1 << 4)) == 0x10)
+	{
+		update_main_target(MAIN_DIRECTION);
+	}
+	if((report->UpdateMask & (1 << 3)) == 0x08)
+	{}
+	if((report->UpdateMask & (1 << 2)) == 0x04)
+	{}
+	if((report->UpdateMask & (1 << 1)) == 0x02)
+	{}
+	if((report->UpdateMask & (1 << 0)) == 0x01)
+	{
+		CLEAR_ALL_LIGHTS;
+	}
 
-	// Unused (but mandatory for the HID class driver) in this demo, since there are no Host->Device reports
+	// Save the data received from the PC
+    // saved = report->UpdateMask;
+	// saved[5] = report->UpdateMask;
+    memcpy(saved, ReportData, ReportSize);
+    memset(saved, report->SignalStrength&0xff, ReportSize);
 }
