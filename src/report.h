@@ -7,6 +7,10 @@
 /** Type define for the joystick HID report structure, for creating and sending HID reports to the host PC.
  *  This mirrors the layout described to the host in the HID report descriptor, in Descriptors.c.
  */
+
+#ifdef _WIN32
+#pragma pack(push, 1)
+#endif
 typedef struct
 {
 	int8_t UpdateMask; // If the given bits are set, update the following fields
@@ -16,7 +20,14 @@ typedef struct
 	int8_t  MainDirection;
 	uint8_t RadarType;
 	uint8_t padding[26];
-} __attribute__((packed)) USB_JoystickReport_Data_t;
+} 
+#ifdef _WIN32
+USB_JoystickReport_Data_t;
+#pragma pack(pop)
+#else
+__attribute__((packed)) USB_JoystickReport_Data_t;
+#endif
+
 
 enum TYPE {
     AIRBORNE = 0,
@@ -26,7 +37,7 @@ enum TYPE {
     EARLY_WARNING,
     AWACS,
     OFF
-};
+};/**/
 
 // Use these to mask what values to udate
 #define UPDATE_MISC (1<<7)
