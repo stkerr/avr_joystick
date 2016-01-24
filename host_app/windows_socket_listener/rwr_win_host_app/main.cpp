@@ -278,7 +278,7 @@ int main(int argc, char** argv)
             }
 
             printf("Received (raw): %s\n", input);
-            
+
 
             rapidjson::Document d;
             d.Parse(input);
@@ -296,9 +296,9 @@ int main(int argc, char** argv)
             //printf("Received: %s\n", buffer.GetString());
 
             rapidjson::Pointer pointer = rapidjson::Pointer("/Emitters");
-            
+
             rapidjson::Value* emitters = pointer.Get(d);
-            
+
             tracking_target main_target;
             memset(&main_target, 0, sizeof(tracking_target));
 
@@ -389,51 +389,84 @@ int main(int argc, char** argv)
 
 
 
-            // Set Feature
+            // Set up the report to configure the RWR board
             memset(&report, 0, sizeof(report));
             report.report_number = 9;
-            report.report.UpdateMask = UPDATE_SIGNAL_STRENGTH;
-            if (main_target.priority > 0)
-                report.report.UpdateMask |= UPDATE_MAIN_DIRECTION;
 
-            //report.report.MiscDriver = bit_count;
-            
+
+            // TODO: Check if the radar is turned on & illuminate the operational light. Always turn it on for now
+            report.report.UpdateMask |= UPDATE_MISC;
+            report.report.MiscDriver |= SERVICABILITY_LED;
+
             // update other targets
             report.report.UpdateMask &= ~UPDATE_OTHER_DIRECTION;
             for (tracking_target t : other_targets)
             {
-                report.report.UpdateMask |= UPDATE_OTHER_DIRECTION;
-                report.report.OtherDirection |= remap_other(degrees_to_value((int)(t.azimuth * 57.2958))); // radians to degrees
+                int other_degrees = t.azimuth * 57.2958;
+                if (other_degrees < -100)
+                {
+                    report.report.UpdateMask |= UPDATE_MISC;
+                    report.report.MiscDriver |= OTHER_LEFT_LED;
+                }
+                else if (other_degrees > 100)
+                {
+                    report.report.UpdateMask |= UPDATE_MISC;
+                    report.report.MiscDriver |= OTHER_RIGHT_LED;
+                }
+                else
+                {
+                    report.report.UpdateMask |= UPDATE_OTHER_DIRECTION;
+                    report.report.OtherDirection |= remap_other(degrees_to_value((int)(t.azimuth * 57.2958))); // radians to degrees
+                }
             }
-            
+
             // update main target
-            report.report.UpdateMask &= ~UPDATE_MAIN_DIRECTION;
-            int main_azimuth_degrees = (int)(main_target.azimuth * 57.2958); // radians to degrees
-            if (main_azimuth_degrees > 100)
+            if (main_target.priority > 0)
             {
-                report.report.UpdateMask |= UPDATE_MISC;
-                report.report.MiscDriver |= MAIN_RIGHT_LED;
-            }
-            else if (main_azimuth_degrees < -100)
-            {
-                report.report.UpdateMask |= UPDATE_MISC;
-                report.report.MiscDriver |= MAIN_LEFT_LED;
+                // if our main targets priority is above 0, its a real target
+                int main_azimuth_degrees = (int)(main_target.azimuth * 57.2958); // radians to degrees
+                if (main_azimuth_degrees > 100)
+                {
+                    report.report.UpdateMask |= UPDATE_MISC;
+                    report.report.MiscDriver |= MAIN_RIGHT_LED;
+                }
+                else if (main_azimuth_degrees < -100)
+                {
+                    report.report.UpdateMask |= UPDATE_MISC;
+                    report.report.MiscDriver |= MAIN_LEFT_LED;
+                }
+                else
+                {
+                    report.report.UpdateMask |= UPDATE_MAIN_DIRECTION;
+                    report.report.MainDirection = main_azimuth_degrees;
+                }
+
+                if (main_target.signal_type == MISSILE_ACTIVE_HOMING)
+                {
+                    // TODO: If this is just a lock, hold the red solid. If it's an acitvely homing missile, then flash the red lights.
+                    report.report.UpdateMask |= UPDATE_MISC;
+                    report.report.MiscDriver |= LOCK_LED;
+                }
+
+                report.report.UpdateMask = UPDATE_SIGNAL_STRENGTH;
+                report.report.SignalStrength = (uint8_t)(main_target.power * 0xff);
+                printf("signal strength: %f -> %d\n", main_target.power, report.report.SignalStrength);
+                printf("Main direction: %f -> %d -> %d\n", main_target.azimuth, (int)(main_target.azimuth * 57.2958), report.report.MainDirection);
+
+                // TODO: Update the radar type based on the main target
+                report.report.RadarType = raw_count % 8;
             }
             else
-                report.report.MainDirection = main_azimuth_degrees;
-            report.report.SignalStrength = (uint8_t)(main_target.power * 0xff);
-            printf("signal strength: %f -> %d\n", main_target.power, report.report.SignalStrength);
+                report.report.UpdateMask &= ~UPDATE_MAIN_DIRECTION;
 
-            // TODO: Update the radar type based on the main target
+            
 
-            printf("Main direction: %f -> %d -> %d\n", main_target.azimuth, (int)(main_target.azimuth * 57.2958), report.report.MainDirection);
-
-            report.report.RadarType = raw_count % 8;
+            
             //printf("report size: %d\n", sizeof(report));
 
             // the write is overlapped, so don't check for a successful return here.
             // At some point (probably never), the trick here is to check to make sure the
-            // overlapped operation, but I don't want to do that now. Here's a note in
+            // overlapped operation completed, but I don't want to do that now. Here's a note in
             // case someone else wants to do it.
             WriteFile(rwr_handle, &report, 65, &bytes_written, &overlapped);
 
