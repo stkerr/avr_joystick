@@ -60,6 +60,8 @@ typedef struct _tracking_target {
     double priority;
     double azimuth;
     double power;
+    bool above;
+    bool below;
 } tracking_target;
 
 #pragma pack(push,1)
@@ -175,10 +177,6 @@ int main(int argc, char** argv)
 
     struct report_wrapper report;
     memset(&report, 0, 65);
-    
-    uint8_t bit_count = 0; // one bit set per iteration
-    uint8_t raw_count = 0; // increments by 1
-    int8_t signed_count = 0;
 
     // create the TCP socket
     
@@ -277,16 +275,18 @@ int main(int argc, char** argv)
                 goto end;
             }
 
-            printf("Received (raw): %s\n", input);
+            //printf("Received (raw): %s\n", input);
 
 
             rapidjson::Document d;
             d.Parse(input);
             if (d.HasParseError())
             {
+                /*
                 printf("\nError(offset %u): %s\n",
                     (unsigned)d.GetErrorOffset(),
                     rapidjson::GetParseError_En(d.GetParseError()));
+                */
                 continue;
             }
 
@@ -295,7 +295,13 @@ int main(int argc, char** argv)
             d.Accept(writer);
             //printf("Received: %s\n", buffer.GetString());
 
-            rapidjson::Pointer pointer = rapidjson::Pointer("/Emitters");
+            rapidjson::Pointer pointer = rapidjson::Pointer("/RadarOn");
+            rapidjson::Value* radar_on_pointer = pointer.Get(d);
+            int radar_on = 0; // RWR is always on, even if radar isn't, since it's a passive system
+            if(radar_on_pointer)
+                radar_on = radar_on_pointer->GetInt();
+
+            pointer = rapidjson::Pointer("/Emitters");
 
             rapidjson::Value* emitters = pointer.Get(d);
 
@@ -313,31 +319,57 @@ int main(int argc, char** argv)
                     {
                         if (emitters[i].IsArray())
                         {
-                            printf("Submember %d is an array with %d members.\n", i, emitters[i].Size());
+                            //printf("Submember %d is an array with %d members.\n", i, emitters[i].Size());
 
+                            printf("---\n");
                             for (rapidjson::SizeType j = 0; j < emitters[i].Size(); j++)
                             {
-                                if (emitters[i][j].HasMember("Priority") && emitters[i][j].HasMember("Azimuth") && emitters[i][j].HasMember("SignalType") && emitters[i][j].HasMember("ID") && emitters[i][j].HasMember("Power"))
+                                if (emitters[i][j].HasMember("Priority") && 
+                                    emitters[i][j].HasMember("Azimuth") && 
+                                    emitters[i][j].HasMember("SignalType") && 
+                                    emitters[i][j].HasMember("ID") && 
+                                    emitters[i][j].HasMember("Power") &&
+                                    emitters[i][j].HasMember("Above") &&
+                                    emitters[i][j].HasMember("Below")
+                                )
                                 {
                                     double power = emitters[i][j]["Power"].GetDouble();
                                     double azimuth = emitters[i][j]["Azimuth"].GetDouble();
                                     double priority = emitters[i][j]["Priority"].GetDouble();
-                                    double type = emitters[i][j]["Priority"].GetDouble();
+                                    int above = emitters[i][j]["Above"].GetInt();
+                                    int below= emitters[i][j]["Below"].GetInt();
+                                    int type = emitters[i][j]["Type"].GetInt();
+
                                     std::string signal_type = std::string(emitters[i][j]["SignalType"].GetString());
-
-                                    printf("ID: %s\n", emitters[i][j]["ID"].GetString());
-                                    printf("SignalType: %s\n", signal_type.c_str());
-                                    printf("Power: %f\n", power);
-                                    printf("Priority: %f\n", priority);
-                                    printf("Azimuth: %f\n", azimuth);
-                                    printf("Type: %f\n", type);
-
+                                    
+                                    printf("ID: %s ", emitters[i][j]["ID"].GetString());
+                                    printf("SignalType: %s ", signal_type.c_str());
+                                    printf("Power: %f ", power);
+                                    printf("Priority: %f ", priority);
+                                    printf("Azimuth: %f ", azimuth);
+                                    printf("Type: %d ", type);
+                                    printf("Above: %d ", above);
+                                    printf("Below: %d\n", below);
+                                    
                                     tracking_target self;
                                     memset(&self, 0, sizeof(self));
                                     self.priority = priority;
                                     self.azimuth = azimuth;
                                     self.power = power;
-                                    //self.type = type;
+                                    if (type < 0 || type > 5)
+                                        self.type = OFF;
+                                    else
+                                        self.type = (TYPE)type;
+
+                                    if (above != 0)
+                                        self.above = true;
+                                    else
+                                        self.above = false;
+
+                                    if (below != 0)
+                                        self.below = true;
+                                    else
+                                        self.below = false;
 
                                     if (signal_type.compare("scan") == 0)
                                         self.signal_type = SCAN;
@@ -346,7 +378,10 @@ int main(int argc, char** argv)
                                     else if (signal_type.compare("missile_active_homing") == 0)
                                         self.signal_type = MISSILE_ACTIVE_HOMING;
                                     else
+                                    {
+                                        printf("Unknown signal type: %s", signal_type.c_str());
                                         self.signal_type = UNKNOWN;
+                                    }
 
                                     if (priority > main_target.priority)
                                     {
@@ -361,6 +396,9 @@ int main(int argc, char** argv)
                                         main_target.azimuth = self.azimuth;
                                         main_target.type = self.type;
                                         main_target.power = self.power;
+                                        main_target.above = self.above;
+                                        main_target.below = self.below;
+                                        main_target.signal_type = self.signal_type;
                                     }
                                     else
                                     {
@@ -385,30 +423,23 @@ int main(int argc, char** argv)
 
 
 
-
-
-
-
-            // Set up the report to configure the RWR board
+            // update other targets
             memset(&report, 0, sizeof(report));
             report.report_number = 9;
 
-
-            // TODO: Check if the radar is turned on & illuminate the operational light. Always turn it on for now
+            // rwr is always on, even if radar isn't
             report.report.UpdateMask |= UPDATE_MISC;
             report.report.MiscDriver |= SERVICABILITY_LED;
 
-            // update other targets
-            report.report.UpdateMask &= ~UPDATE_OTHER_DIRECTION;
             for (tracking_target t : other_targets)
             {
                 int other_degrees = t.azimuth * 57.2958;
-                if (other_degrees < -100)
+                if (other_degrees < -110)
                 {
                     report.report.UpdateMask |= UPDATE_MISC;
                     report.report.MiscDriver |= OTHER_LEFT_LED;
                 }
-                else if (other_degrees > 100)
+                else if (other_degrees > 110)
                 {
                     report.report.UpdateMask |= UPDATE_MISC;
                     report.report.MiscDriver |= OTHER_RIGHT_LED;
@@ -418,19 +449,23 @@ int main(int argc, char** argv)
                     report.report.UpdateMask |= UPDATE_OTHER_DIRECTION;
                     report.report.OtherDirection |= remap_other(degrees_to_value((int)(t.azimuth * 57.2958))); // radians to degrees
                 }
+
             }
+
+            // TODO: Check if the radar is turned on & illuminate the operational light. Always turn it on for now
+
 
             // update main target
             if (main_target.priority > 0)
             {
                 // if our main targets priority is above 0, its a real target
                 int main_azimuth_degrees = (int)(main_target.azimuth * 57.2958); // radians to degrees
-                if (main_azimuth_degrees > 100)
+                if (main_azimuth_degrees > 110)
                 {
                     report.report.UpdateMask |= UPDATE_MISC;
                     report.report.MiscDriver |= MAIN_RIGHT_LED;
                 }
-                else if (main_azimuth_degrees < -100)
+                else if (main_azimuth_degrees < -110)
                 {
                     report.report.UpdateMask |= UPDATE_MISC;
                     report.report.MiscDriver |= MAIN_LEFT_LED;
@@ -448,17 +483,29 @@ int main(int argc, char** argv)
                     report.report.MiscDriver |= LOCK_LED;
                 }
 
-                report.report.UpdateMask = UPDATE_SIGNAL_STRENGTH;
+                report.report.UpdateMask |= UPDATE_SIGNAL_STRENGTH;
                 report.report.SignalStrength = (uint8_t)(main_target.power * 0xff);
                 printf("signal strength: %f -> %d\n", main_target.power, report.report.SignalStrength);
                 printf("Main direction: %f -> %d -> %d\n", main_target.azimuth, (int)(main_target.azimuth * 57.2958), report.report.MainDirection);
 
-                // TODO: Update the radar type based on the main target
-                report.report.RadarType = raw_count % 8;
+                report.report.UpdateMask |= UPDATE_RADAR_TYPE;
+                report.report.RadarType = main_target.type;
+
+                report.report.UpdateMask |= UPDATE_MISC;
+                if (main_target.above)
+                    report.report.MiscDriver |= ABOVE_LED;
+
+
+                report.report.UpdateMask |= UPDATE_MISC;
+                if (main_target.below)
+                    report.report.MiscDriver |= BELOW_LED;
             }
             else
-                report.report.UpdateMask &= ~UPDATE_MAIN_DIRECTION;
-
+            {
+                report.report.UpdateMask |= UPDATE_CLEAR_ALL;
+                report.report.UpdateMask |= UPDATE_RADAR_TYPE;
+                report.report.RadarType = OFF;
+            }
             
 
             
@@ -470,16 +517,6 @@ int main(int argc, char** argv)
             // case someone else wants to do it.
             WriteFile(rwr_handle, &report, 65, &bytes_written, &overlapped);
 
-            // sleep for a bit
-            Sleep(10);
-
-            if (bit_count == 0)
-                bit_count = 1;
-            else
-                bit_count = bit_count << 1;
-
-            raw_count++;
-            signed_count++;
         }
 
         // once the client has disconnected, start listening again
