@@ -51,7 +51,8 @@ enum track_type
     UNKNOWN,
     SCAN,
     SCAN_AND_TRACK,
-    MISSILE_ACTIVE_HOMING
+    MISSILE_ACTIVE_HOMING,
+    LOCK
 };
 
 typedef struct _tracking_target {
@@ -377,9 +378,11 @@ int main(int argc, char** argv)
                                         self.signal_type = SCAN_AND_TRACK;
                                     else if (signal_type.compare("missile_active_homing") == 0)
                                         self.signal_type = MISSILE_ACTIVE_HOMING;
+                                    else if (signal_type.compare("lock") == 0)
+                                        self.signal_type = LOCK;
                                     else
                                     {
-                                        printf("Unknown signal type: %s", signal_type.c_str());
+                                        printf("Unknown signal type: %s ", signal_type.c_str());
                                         self.signal_type = UNKNOWN;
                                     }
 
@@ -476,7 +479,7 @@ int main(int argc, char** argv)
                     report.report.MainDirection = main_azimuth_degrees;
                 }
 
-                if (main_target.signal_type == MISSILE_ACTIVE_HOMING)
+                if (main_target.signal_type == MISSILE_ACTIVE_HOMING || main_target.signal_type == LOCK)
                 {
                     // TODO: If this is just a lock, hold the red solid. If it's an acitvely homing missile, then flash the red lights.
                     report.report.UpdateMask |= UPDATE_MISC;
